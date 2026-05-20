@@ -7,7 +7,7 @@ from kasa import SmartPlug  # Run: pip install python-kasa
 LATITUDE = 39.773660668668505 # Danville, IN
 LONGITUDE = -86.49409774903292 # Danville, IN
 TIMEZONE_OFFSET = -5  # Your local UTC offset (e.g., -5 for EST)
-PLUG_IP = "192.168.1.100"  # Your smart plug's local IP address
+PLUG_IP = "192.168.1.150"  # Your smart plug's local IP address
 
 # 2. Solar Calculation Core
 def get_solar_times():
@@ -60,19 +60,15 @@ async def manage_habitat_lighting():
     now = datetime.now()
     current_hour = now.hour + (now.minute / 60.0) + (now.second / 3600.0)
 
-    # Initialize Plug
-    plug = SmartPlug(PLUG_IP)
-    await plug.update()
-
     # Determine if lights should be ON or OFF
     if sunrise_hour <= current_hour < sunset_hour:
-        if not plug.is_on:
-            await plug.turn_on()
-            print(f"[{now.strftime('%X')}] Daylight active: Turned habitat lights ON.")
+        # Turns the Shelly plug ON instantly over your local network
+        urllib.request.urlopen(f"http://{PLUG_IP}/rpc/Switch.Set?id=0&on=true")
+        print("Local LAN Command sent: Habitat lights turned ON.")
     else:
-        if plug.is_on:
-            await plug.turn_off()
-            print(f"[{now.strftime('%X')}] Night active: Turned habitat lights OFF.")
+        # Turns the Shelly plug OFF instantly over your local network
+        urllib.request.urlopen(f"http://{PLUG_IP}/rpc/Switch.Set?id=0&on=false")
+        print("Local LAN Command sent: Habitat lights turned OFF.")
 
 # Run the task loop
 if __name__ == "__main__":
