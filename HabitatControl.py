@@ -1,13 +1,13 @@
 import math
 from datetime import datetime, timezone, timedelta
-import asyncio
-from kasa import SmartPlug  # Run: pip install python-kasa
+import urllib.request
 
 # 1. Configuration
 LATITUDE = 39.773660668668505 # Danville, IN
 LONGITUDE = -86.49409774903292 # Danville, IN
 TIMEZONE_OFFSET = -5  # Your local UTC offset (e.g., -5 for EST)
 PLUG_IP = "192.168.1.150"  # Your smart plug's local IP address
+MIN_DAYLIGHT_HRS = 12.0
 
 # 2. Solar Calculation Core
 def get_solar_times():
@@ -49,26 +49,43 @@ def get_solar_times():
 
     return local_sunrise, local_sunset
 
+def control_shelly(state: bool):
+    state_str = "true" if state else "false"
+    url = f"http://{PLUG_IP}/rpc/Switch.Set?id=0&on={state_str}"
+    try:
+        urllib.request.urlopen(url, timeout=5)
+    except Exception as e:
+        print(f"Error communicating with smart plug: {e}")
+
 # 3. Smart Plug Control
 async def manage_habitat_lighting():
-    sunrise_hour, sunset_hour = get_solar_times()
-    if sunrise_hour is None:
-        print("Extreme latitude detected. Check schedule manual fallback.")
-        return
+    natural_sunrise, natural_sunset = get_solar_times()
+    natural_daylight = natural_sunset - natural_sunrise
+    if natural_daylight < 0
+        natural_daylight += 24
+
+    if natural_daylight < MIN_DAYLIGHT_HRS
+        deficit = MIN_DAYLIGHT_HRS - nautral_daylight
+        padding = deficit / 2.0
+
+    sunrise_hour = (natural_sunrise - padding) % 24
+    sunset_hour = (natural_sunset + padding) % 24
 
     # Get current local time as a decimal hour
     now = datetime.now()
     current_hour = now.hour + (now.minute / 60.0) + (now.second / 3600.0)
 
+    print(f"Current Time: {now.strftime('%H:%M:%S')} ({current_hour:.2f})")
+    print(f"Target Sunrise: {int(sunrise):02d}:{int((sunrise%1)*60):02d}")
+    print(f"Target Sunset:  {int(sunset):02d}:{int((sunset%1)*60):02d}")
+
     # Determine if lights should be ON or OFF
     if sunrise_hour <= current_hour < sunset_hour:
-        # Turns the Shelly plug ON instantly over your local network
-        urllib.request.urlopen(f"http://{PLUG_IP}/rpc/Switch.Set?id=0&on=true")
-        print("Local LAN Command sent: Habitat lights turned ON.")
+        control_shelly(True)
+        print("Status: Habitat lights should be ON.")
     else:
-        # Turns the Shelly plug OFF instantly over your local network
-        urllib.request.urlopen(f"http://{PLUG_IP}/rpc/Switch.Set?id=0&on=false")
-        print("Local LAN Command sent: Habitat lights turned OFF.")
+        control_shelly(False)
+        print("Status: Habitat lights should be OFF.")
 
 # Run the task loop
 if __name__ == "__main__":
