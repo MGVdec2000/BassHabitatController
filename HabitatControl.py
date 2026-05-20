@@ -6,7 +6,9 @@ import urllib.request
 LATITUDE = 39.773660668668505 # Danville, IN
 LONGITUDE = -86.49409774903292 # Danville, IN
 TIMEZONE_OFFSET = -5  # Your local UTC offset (e.g., -5 for EST)
-PLUG_IP = "192.168.1.150"  # Your smart plug's local IP address
+UVB_IP = "192.168.1.150"
+BASKING_IP = "192.168.1.151"
+CHE_IP = "192.168.1.152"
 MIN_DAYLIGHT_HRS = 12.0
 
 # 2. Solar Calculation Core
@@ -49,13 +51,13 @@ def get_solar_times():
 
     return local_sunrise, local_sunset
 
-def control_shelly(state: bool):
+def control_shelly(ip_address: ip, state: bool):
     state_str = "true" if state else "false"
-    url = f"http://{PLUG_IP}/rpc/Switch.Set?id=0&on={state_str}"
+    url = f"http://{ip_address}/rpc/Switch.Set?id=0&on={state_str}"
     try:
         urllib.request.urlopen(url, timeout=5)
     except Exception as e:
-        print(f"Error communicating with smart plug: {e}")
+        print(f"Error communicating with smart plug {ip_address}: {e}")
 
 # 3. Smart Plug Control
 async def manage_habitat_lighting():
@@ -81,11 +83,15 @@ async def manage_habitat_lighting():
 
     # Determine if lights should be ON or OFF
     if sunrise_hour <= current_hour < sunset_hour:
-        control_shelly(True)
-        print("Status: Habitat lights should be ON.")
+        control_shelly(UVB_IP, True)
+        control_shelly(BASKING_IP, True)
+        control_shelly(CHE_IP, False)
+        print("Status: Habitat lights ON, heater OFF.")
     else:
-        control_shelly(False)
-        print("Status: Habitat lights should be OFF.")
+        control_shelly(UVB_IP, False)
+        control_shelly(BASKING_IP, False)
+        control_shelly(CHE_IP, True)
+        print("Status: Habitat lights OFF, heater OM.")
 
 # Run the task loop
 if __name__ == "__main__":
