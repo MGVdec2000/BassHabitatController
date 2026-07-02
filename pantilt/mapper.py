@@ -95,9 +95,20 @@ class EnclosureMapper:
         self._cam_y: float = float(map_cfg.get("camera_y_in", -12.0))
         self._cam_h: float = float(map_cfg.get("camera_height_in", 36.0))
 
-        # Optional linear-scale overrides set during calibration
-        self._pan_ipc: float | None = map_cfg.get("pan_inches_per_step")
-        self._tilt_ipc: float | None = map_cfg.get("tilt_inches_per_step")
+        # Optional linear-scale overrides set during calibration.
+        # If present they must be numeric; invalid values fall back to None
+        # so the geometric ray-cast is used instead.
+        def _as_float_or_none(val):
+            if val is None:
+                return None
+            try:
+                return float(val)
+            except (TypeError, ValueError):
+                logger.warning("Invalid inches_per_step value %r – using auto.", val)
+                return None
+
+        self._pan_ipc: float | None = _as_float_or_none(map_cfg.get("pan_inches_per_step"))
+        self._tilt_ipc: float | None = _as_float_or_none(map_cfg.get("tilt_inches_per_step"))
 
         # Log path setup
         log_dir = Path(log_cfg.get("log_dir", "logs"))
@@ -151,9 +162,12 @@ class EnclosureMapper:
         if abs(cos_t) < 1e-6:
             return None, None
 
-        # Ground distance along the ray
+        # Ground distance along the ray.
+        # When the ray points upward (sin ≤ 0) it never intersects the floor;
+        # cap at the maximum enclosure diagonal as a safe fallback.
+        _MAX_GROUND_DIST = math.sqrt(self.leg1 ** 2 + self.leg2 ** 2)
         ground_dist = self._cam_h / math.tan(effective_tilt_rad) \
-            if math.sin(effective_tilt_rad) > 0 else self._cam_h * 10
+            if math.sin(effective_tilt_rad) > 0 else _MAX_GROUND_DIST
 
         x = self._cam_x + ground_dist * math.sin(pan_rad)
         y = self._cam_y + ground_dist * math.cos(pan_rad)

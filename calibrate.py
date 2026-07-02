@@ -194,7 +194,7 @@ def set_mapping_params(config) -> None:
         raw = input(prompt).strip()
         if raw:
             try:
-                config.set(section, key, float(raw) if raw else None)
+                config.set(section, key, float(raw))
             except ValueError:
                 print("  Invalid – skipped.")
 

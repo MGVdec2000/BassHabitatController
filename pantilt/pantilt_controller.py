@@ -51,8 +51,8 @@ class PanTiltController:
         # We compute lazily in update() once we know frame dimensions.
         self._pan_spd: float = float(pan_cfg.get("steps_per_degree", 11.38))
         self._tilt_spd: float = float(tilt_cfg.get("steps_per_degree", 11.38))
-        self._pan_fov: float = float(config.get("mapping", "pan_fov_deg") or 62.2)
-        self._tilt_fov: float = float(config.get("mapping", "tilt_fov_deg") or 48.8)
+        self._pan_fov: float = float(config.get("mapping", "pan_fov_deg", default=62.2) or 62.2)
+        self._tilt_fov: float = float(config.get("mapping", "tilt_fov_deg", default=48.8) or 48.8)
 
     # ── Control update ───────────────────────────────────────────────────────
 

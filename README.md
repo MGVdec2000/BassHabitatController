@@ -216,7 +216,7 @@ Key settings (see `config_template.json` for the full list):
 
 * The MOG2 background model needs ~30 frames to initialise.  Allow 2–3 seconds
   after launch before detections appear.
-* If the tortoise is always stationary, increase `tracking.confidence_threshold`
+* If the tortoise is always stationary, decrease `tracking.confidence_threshold`
   down to 0.1 to catch smaller motion blobs.
 * Bright reflections, cage mesh shadows, or substrate texture can confuse the
   background subtractor.  Try adjusting ambient lighting to reduce contrast.

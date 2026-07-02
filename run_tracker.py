@@ -17,6 +17,8 @@ import logging
 import signal
 import sys
 
+import cv2  # noqa: E402 – imported after logging setup intentionally
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)-8s %(name)s: %(message)s",
@@ -75,8 +77,6 @@ def main() -> None:
     )
 
     try:
-        import cv2
-
         while running:
             frame = tracker.read_frame()
             if frame is None:
@@ -113,8 +113,7 @@ def main() -> None:
         mapper.save_plots(log_dir)
         if args.show:
             try:
-                import cv2 as _cv2
-                _cv2.destroyAllWindows()
+                cv2.destroyAllWindows()
             except Exception:
                 pass
         logger.info(
