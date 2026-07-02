@@ -1,0 +1,18 @@
+# Core computer-vision and numeric packages
+opencv-python-headless>=4.5.0
+numpy>=1.21.0
+matplotlib>=3.4.0
+
+# Optional: Gaussian smoothing for the occupancy heatmap.
+# Remove if scipy is too heavy for your Pi installation; the heatmap
+# will still work, just without smoothing.
+scipy>=1.7.0
+
+# GPIO driver – Raspberry Pi only.
+# Install manually on Pi:
+#   pip install RPi.GPIO
+# or:
+#   sudo apt install python3-rpi.gpio
+#
+# On a development machine this is NOT installed; the built-in mock
+# (pantilt/_gpio_mock.py) is used automatically so all other code runs.

@@ -1,0 +1,49 @@
+{
+  "_comment": "Copy this file to config.json and edit as needed. Remove all _comment keys.",
+  "pan": {
+    "_comment": "Pan motor – 28BYJ-48 via ULN2003. BCM GPIO pins: IN1=17, IN2=18, IN3=27, IN4=22",
+    "pins": [17, 18, 27, 22],
+    "min_steps": -400,
+    "max_steps": 400,
+    "direction": 1,
+    "steps_per_degree": 11.38
+  },
+  "tilt": {
+    "_comment": "Tilt motor – 28BYJ-48 via ULN2003. BCM GPIO pins: IN1=23, IN2=24, IN3=25, IN4=4",
+    "pins": [23, 24, 25, 4],
+    "min_steps": -200,
+    "max_steps": 200,
+    "direction": 1,
+    "steps_per_degree": 11.38
+  },
+  "camera": {
+    "_comment": "Arducam IMX477 Pi HQ Camera. index=0 maps to /dev/video0.",
+    "index": 0,
+    "width": 640,
+    "height": 480,
+    "fps": 15
+  },
+  "tracking": {
+    "_comment": "deadband_px: pixel error below which no motor step is issued (jitter prevention).",
+    "deadband_px": 20,
+    "max_step_per_frame": 8,
+    "confidence_threshold": 0.3
+  },
+  "mapping": {
+    "_comment": "Enclosure: 25-inch wide L-shape with 5-ft (60-in) Short leg and 8-ft (96-in) Long leg.",
+    "pan_fov_deg": 62.2,
+    "tilt_fov_deg": 48.8,
+    "enclosure_width_in": 25,
+    "enclosure_short_leg_in": 60,
+    "enclosure_long_leg_in": 96,
+    "camera_x_in": 12.5,
+    "camera_y_in": -12.0,
+    "camera_height_in": 36.0,
+    "pan_inches_per_step": null,
+    "tilt_inches_per_step": null
+  },
+  "logging": {
+    "log_dir": "logs",
+    "log_file": "track_log.csv"
+  }
+}
