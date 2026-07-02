@@ -8,21 +8,21 @@ inches with the inside corner of the L at the origin (0, 0):
 
         Y
         ▲
-  leg1  │  (vertical leg)  25" wide, 96" tall
+        │  (Short leg)  25" wide, 60" tall
         │  ╔═══════╗
         │  ║       ║
-   96"  │  ║  leg1 ║
-        │  ║       ║
-    25" │  ╠═══════╬════════════════╗  ← where the two legs meet
-     0" │  ╚═══════╩════════════════╝
-        └──────────────────────────────► X
-           0"    25"               85"
-                        leg2 (60" long, 25" tall)
+   60"  │  ║ Short ║
+        │  ║  leg  ║
+    25" │  ╠═══════╬══════════════════════════════╗  ← where the two legs meet
+     0" │  ╚═══════╩══════════════════════════════╝
+        └──────────────────────────────────────────► X
+           0"    25"                              121"
+                          Long leg (96" long, 25" tall)
 
 Valid positions satisfy:
-  (0 ≤ x ≤ 25 AND 0 ≤ y ≤ 96)  ← vertical leg
+  (0 ≤ x ≤ 25 AND 0 ≤ y ≤ 60)  ← Short leg
   OR
-  (0 ≤ x ≤ 60 AND 0 ≤ y ≤ 25) ← horizontal leg
+  (0 ≤ x ≤ 96 AND 0 ≤ y ≤ 25) ← Long leg
 
 Pan/tilt → enclosure mapping
 -----------------------------
@@ -61,11 +61,11 @@ _CSV_HEADER = ["timestamp", "x_in", "y_in", "pan_steps", "tilt_steps", "confiden
 
 
 def in_lshape(x: float, y: float,
-              width: float, leg1: float, leg2: float) -> bool:
+              width: float, short_leg: float, long_leg: float) -> bool:
     """Return True if (x, y) lies inside the L-shaped enclosure."""
-    in_vert = (0 <= x <= width) and (0 <= y <= leg1)
-    in_horiz = (0 <= x <= leg2) and (0 <= y <= width)
-    return in_vert or in_horiz
+    in_short_leg = (0 <= x <= width) and (0 <= y <= short_leg)
+    in_long_leg = (0 <= x <= long_leg) and (0 <= y <= width)
+    return in_short_leg or in_long_leg
 
 
 class EnclosureMapper:
@@ -88,8 +88,8 @@ class EnclosureMapper:
         self._tilt_fov: float = float(map_cfg.get("tilt_fov_deg", 48.8))
 
         self.width: float = float(map_cfg.get("enclosure_width_in", 25))
-        self.leg1: float = float(map_cfg.get("enclosure_leg1_in", 96))
-        self.leg2: float = float(map_cfg.get("enclosure_leg2_in", 60))
+        self.short_leg: float = float(map_cfg.get("enclosure_short_leg_in", 60))
+        self.long_leg: float = float(map_cfg.get("enclosure_long_leg_in", 96))
 
         self._cam_x: float = float(map_cfg.get("camera_x_in", self.width / 2))
         self._cam_y: float = float(map_cfg.get("camera_y_in", -12.0))
@@ -151,7 +151,7 @@ class EnclosureMapper:
         # depression angle estimated from camera height / enclosure distance.
         try:
             base_depression = math.atan2(
-                self._cam_h, max(abs(self._cam_y) + self.leg1 / 2, 1)
+                self._cam_h, max(abs(self._cam_y) + self.short_leg / 2, 1)
             )
         except ZeroDivisionError:
             base_depression = math.radians(30)
@@ -165,7 +165,7 @@ class EnclosureMapper:
         # Ground distance along the ray.
         # When the ray points upward (sin ≤ 0) it never intersects the floor;
         # cap at the maximum enclosure diagonal as a safe fallback.
-        _MAX_GROUND_DIST = math.sqrt(self.leg1 ** 2 + self.leg2 ** 2)
+        _MAX_GROUND_DIST = math.sqrt(self.short_leg ** 2 + self.long_leg ** 2)
         ground_dist = self._cam_h / math.tan(effective_tilt_rad) \
             if math.sin(effective_tilt_rad) > 0 else _MAX_GROUND_DIST
 
@@ -189,7 +189,7 @@ class EnclosureMapper:
 
         valid = False
         if x is not None and y is not None:
-            valid = in_lshape(x, y, self.width, self.leg1, self.leg2)
+            valid = in_lshape(x, y, self.width, self.short_leg, self.long_leg)
             if valid:
                 self._track.append((x, y))
 
@@ -224,15 +224,15 @@ class EnclosureMapper:
 
     def _draw_enclosure(self, ax) -> None:
         """Draw the L-shaped enclosure outline on a matplotlib Axes."""
-        w, l1, l2 = self.width, self.leg1, self.leg2
-        # Vertical leg (full height)
+        w, sl, ll = self.width, self.short_leg, self.long_leg
+        # Short leg (vertical section)
         ax.add_patch(patches.Rectangle(
-            (0, 0), w, l1,
+            (0, 0), w, sl,
             linewidth=1.5, edgecolor="black", facecolor="none",
         ))
-        # Horizontal leg (bottom of L)
+        # Long leg (horizontal section)
         ax.add_patch(patches.Rectangle(
-            (0, 0), l2, w,
+            (0, 0), ll, w,
             linewidth=1.5, edgecolor="navy", facecolor="lightsteelblue", alpha=0.25,
         ))
 
@@ -245,8 +245,8 @@ class EnclosureMapper:
             ax.plot(xs[0], ys[0], "go", markersize=8, label="start")
             ax.plot(xs[-1], ys[-1], "ro", markersize=8, label="end")
             ax.legend(loc="upper right", fontsize=8)
-        ax.set_xlim(-2, max(self.leg2, self.width) + 5)
-        ax.set_ylim(-5, self.leg1 + 5)
+        ax.set_xlim(-2, max(self.long_leg, self.width) + 5)
+        ax.set_ylim(-5, self.short_leg + 5)
         ax.set_xlabel("X (inches)")
         ax.set_ylabel("Y (inches)")
         ax.set_title("Tortoise Path Track")
@@ -257,8 +257,8 @@ class EnclosureMapper:
         logger.info("Path plot saved → %s", path)
 
     def _save_heatmap(self, path: Path) -> None:
-        grid_w = int(max(self.leg2, self.width)) + 2
-        grid_h = int(self.leg1) + 2
+        grid_w = int(max(self.long_leg, self.width)) + 2
+        grid_h = int(self.short_leg) + 2
         grid = np.zeros((grid_h, grid_w), dtype=float)
 
         for x, y in self._track:

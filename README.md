@@ -153,14 +153,14 @@ Press **Ctrl-C** to stop.  Logs and plots are saved to `logs/` on exit.
         Y (inches)
         ▲
         │  ╔═══════╗
-   96"  │  ║       ║
-        │  ║ leg 1 ║  ← 25" wide, 96" tall (8 ft)
-        │  ║       ║
-   25"  │  ╠═══════╬═══════════════════╗
-    0"  │  ╚═══════╩═══════════════════╝
-        └──────────────────────────────────► X (inches)
-           0"    25"                    85"
-                         leg 2 (60" long, 25" tall, 5 ft)
+   60"  │  ║       ║
+        │  ║ Short ║  ← 25" wide, 60" tall (5 ft)
+        │  ║  leg  ║
+   25"  │  ╠═══════╬════════════════════════════════════╗
+    0"  │  ╚═══════╩════════════════════════════════════╝
+        └──────────────────────────────────────────────────► X (inches)
+           0"    25"                                    121"
+                               Long leg (96" long, 25" tall, 8 ft)
 ```
 
 Origin (0, 0) is at the inside corner of the L.  Any logged point outside the

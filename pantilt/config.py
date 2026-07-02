@@ -57,8 +57,8 @@ DEFAULT_CONFIG: dict = {
         "pan_fov_deg": 62.2,          # Arducam IMX477 approximate HFOV
         "tilt_fov_deg": 48.8,         # Arducam IMX477 approximate VFOV
         "enclosure_width_in": 25,     # corridor width (both legs)
-        "enclosure_leg1_in": 96,      # long leg length  (8 ft)
-        "enclosure_leg2_in": 60,      # short leg length (5 ft)
+        "enclosure_short_leg_in": 60, # short leg length (5 ft, vertical)
+        "enclosure_long_leg_in": 96,  # long leg length  (8 ft, horizontal)
         # Camera mount position in enclosure coordinate space (inches).
         # The coordinate origin is the inside corner of the L-shape.
         "camera_x_in": 12.5,          # centred on the width of leg 1
