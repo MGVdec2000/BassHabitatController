@@ -16,7 +16,7 @@ inches with the inside corner of the L at the origin (0, 0):
     25" │  ╠═══════╬══════════════════════════════╗  ← where the two legs meet
      0" │  ╚═══════╩══════════════════════════════╝
         └──────────────────────────────────────────► X
-           0"    25"                              121"
+           0"    25"                              96"
                           Long leg (96" long, 25" tall)
 
 Valid positions satisfy:
