@@ -1,16 +1,23 @@
-# Core computer-vision and numeric packages
-opencv-python-headless>=4.5.0
-numpy>=1.21.0
-matplotlib>=3.4.0
-
-# Optional: Gaussian smoothing for the occupancy heatmap.
-# Remove if scipy is too heavy for your Pi installation; the heatmap
-# will still work, just without smoothing.
-scipy>=1.7.0
-
-# GPIO stack (Raspberry Pi)
-# RPi.GPIO is used first; on Pi 5, rpi-lgpio/lgpio is used as a fallback backend.
-RPi.GPIO>=0.7.1
-rpi-lgpio>=0.6
-
-opencv-python
+certifi==2026.6.17
+charset-normalizer==3.4.9
+contourpy==1.3.3
+cycler==0.12.1
+fonttools==4.63.0
+idna==3.18
+kiwisolver==1.5.0
+lgpio==0.2.2.0
+matplotlib==3.11.0
+numpy==2.5.0
+opencv-python==5.0.0.93
+opencv-python-headless==5.0.0.93
+packaging==26.2
+pillow==12.3.0
+pyparsing==3.3.2
+python-dateutil==2.9.0.post0
+PyYAML==6.0.3
+requests==2.34.2
+rpi-lgpio==0.6
+RPi.GPIO==0.7.1
+scipy==1.18.0
+six==1.17.0
+urllib3==2.7.0
