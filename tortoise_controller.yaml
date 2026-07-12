@@ -1,0 +1,23 @@
+location:
+  latitude: 39.7616
+  longitude: -86.5212
+  timezone: "America/Indiana/Indianapolis"
+
+daylight_minimum_hours: 12.0
+
+plugs:
+  basking_lamp:
+    ip: "192.168.1.189"
+    shelly_id: "Plug_001"
+
+  uvb_lamp:
+    ip: "192.168.1.191"
+    shelly_id: "Plug_002"
+
+  ceramic_heater:
+    ip: "192.168.1.246"
+    shelly_id: "Plug_003"
+
+#  unassigned:
+#    ip: "192.168.1.192"
+#    shelly_id: "Plug_004"

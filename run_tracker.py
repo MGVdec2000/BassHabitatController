@@ -6,10 +6,10 @@ Usage
 -----
   python run_tracker.py                    # headless (no display)
   python run_tracker.py --show             # show live video window
-  python run_tracker.py --config my.json  # use alternate config file
+  python run_tracker.py --config my.json  # use an alternate config file
 
 Press Ctrl-C (or send SIGTERM) to stop gracefully.  Logs and plots are
-written to the ``logs/`` directory (configurable in config.json).
+written to the "logs/" directory (configurable in config.json).
 """
 
 import argparse
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Tortoise pan/tilt tracker (Raspberry Pi 4 / 28BYJ-48)"
+        description="Tortoise pan/tilt tracker (Raspberry Pi 5 / 28BYJ-48)"
     )
     parser.add_argument(
         "--config", default="config.json",

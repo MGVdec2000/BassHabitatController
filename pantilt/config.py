@@ -5,11 +5,11 @@ Settings are stored in a JSON file (default: config.json in the project root).
 If no file exists the built-in defaults are used so the system is runnable
 without any setup step.
 
-Default GPIO pin assignments (BCM numbering, Raspberry Pi 4):
+Default GPIO pin assignments (BCM numbering, Raspberry Pi 5):
   Pan  motor (28BYJ-48 / ULN2003): IN1=17, IN2=18, IN3=27, IN4=22
   Tilt motor (28BYJ-48 / ULN2003): IN1=23, IN2=24, IN3=25, IN4=4
 
-These pins are safe, common GPIO outputs on Pi 4 that avoid
+These pins are safe, common GPIO outputs on Pi 5 that avoid
 hardware-special functions (SPI, I2C, UART, PWM on 12/13/18/19).
 Override any value via the config file.
 """
@@ -26,8 +26,8 @@ DEFAULT_CONFIG: dict = {
     # ── Pan axis ────────────────────────────────────────────────────────────
     "pan": {
         "pins": [17, 18, 27, 22],    # BCM: IN1, IN2, IN3, IN4
-        "min_steps": -400,            # software travel limit (negative = left)
-        "max_steps": 400,             # software travel limit (positive = right)
+        "min_steps": -1024,            # 90 degrees software travel limit (negative = left)
+        "max_steps": 1024,             # 90 degrees software travel limit (positive = right)
         "direction": 1,               # 1 or -1 to flip motor direction
         "steps_per_degree": 11.38,    # 28BYJ-48: 4096 half-steps / 360°
     },
