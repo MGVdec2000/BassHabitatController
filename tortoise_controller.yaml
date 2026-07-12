@@ -18,6 +18,11 @@ plugs:
     ip: "192.168.1.246"
     shelly_id: "Plug_003"
 
-#  unassigned:
-#    ip: "192.168.1.192"
-#    shelly_id: "Plug_004"
+humidity:
+  on_minutes: 0.5
+  cycle_interval_minutes: 120.0
+  only_during_daylight: true
+  plugs:
+    mister:
+      ip: "192.168.1.192"
+      shelly_id: "Plug_004"
