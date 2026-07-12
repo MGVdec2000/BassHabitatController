@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: EnvironmentController (debugpy)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/EnvironmentController.py",
+            "console": "integratedTerminal",
+            "args": ["--debug"],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

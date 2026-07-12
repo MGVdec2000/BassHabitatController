@@ -89,9 +89,12 @@ def main() -> None:
     humidity = HumidityController(
         plugs=humidity_plugs,
         schedule=env_schedule,
-        on_minutes=float(humidity_cfg.get("on_minutes", 2.0)),
-        cycle_interval_minutes=float(humidity_cfg.get("cycle_interval_minutes", 60.0)),
+        on_minutes=float(humidity_cfg.get("on_minutes", 0.5)),
+        number_of_periods=int(humidity_cfg.get("number_of_periods", 4)),
+        sunrise_offset_minutes=float(humidity_cfg.get("sunrise_offset_minutes", 0.0)),
+        sunset_offset_minutes=float(humidity_cfg.get("sunset_offset_minutes", 0.0)),
         only_during_daylight=bool(humidity_cfg.get("only_during_daylight", True)),
+        debug=debug,
     )
 
     try:

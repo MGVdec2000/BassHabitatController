@@ -20,9 +20,11 @@ plugs:
 
 humidity:
   on_minutes: 0.5
-  cycle_interval_minutes: 120.0
+  number_of_periods: 4
   only_during_daylight: true
+  sunrise_offset_minutes: 30
+  sunset_offset_minutes: -30
   plugs:
     mister:
-      ip: "192.168.1.192"
+      ip: "192.168.1.183"
       shelly_id: "Plug_004"
