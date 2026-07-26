@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
-
+from datetime import datetime, time, timedelta
+from threading import thread
 from shelly_plug import ShellyPlug
 from environment_schedule import EnvironmentSchedule
 from utils import between_two_times, get_timestamp
@@ -37,7 +37,6 @@ class HumidityController:
         self.debug = debug
         self.cached_windows: list[tuple[datetime, datetime]] = []
         self.last_window_update_date: datetime | None = None
-        self.last_misting: bool | None = None
 
     def _update_misting_windows_if_needed(self, now: datetime) -> None:
         """Recalculate misting windows if the date has changed."""
@@ -87,7 +86,23 @@ class HumidityController:
 
     def update(self, now: datetime) -> None:
         misting = self._should_mist(now)
-        if misting != self.last_misting:
-            self.last_misting = misting
+        if not misting:
+            return
+        success = False
+        while not success:
+            success = True
             for plug in self.plugs.values():
-                plug.set_on(misting)
+                success &= plug.set_on(True)
+            thread.sleep(1.0)
+        elapsed_time = 0
+        start_time = time.perf_counter()
+        while elapsed_time < self.on_minutes * 60:
+            dt = 0.5
+            thread.sleep(dt)
+            elapsed_time = time.perf_counter() - start_time
+        success = False
+        while not success:
+            success = True
+            for plug in self.plugs.values():
+                success &= plug.set_on(False)
+            thread.sleep(1.0)

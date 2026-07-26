@@ -19,7 +19,7 @@ plugs:
     shelly_id: "Plug_003"
 
 humidity:
-  on_minutes: 0.5
+  on_minutes: 0.75
   number_of_periods: 4
   only_during_daylight: true
   sunrise_offset_minutes: 30
