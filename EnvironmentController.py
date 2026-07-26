@@ -44,7 +44,8 @@ def get_current_states(plugs: dict[str, ShellyPlug]) -> None:
 
 
 def main() -> None:
-    print(f"{get_timestamp()}Starting Tortoise Environment Controller...")
+    thread.sleep(3)  # Give some time for system to stabilize before starting
+    print(f"{get_timestamp()}Starting Tortoise Environment Controller, v3.0")
     if debug:
         print(f"{get_timestamp()}Using config file: {CONFIG_PATH}")
 
