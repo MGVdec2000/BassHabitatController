@@ -21,7 +21,6 @@ plugs:
 humidity:
   on_minutes: 0.75
   number_of_periods: 4
-  only_during_daylight: true
   sunrise_offset_minutes: 30
   sunset_offset_minutes: -30
   plugs:

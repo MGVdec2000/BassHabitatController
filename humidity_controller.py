@@ -1,5 +1,4 @@
 from datetime import datetime, time, timedelta
-from threading import thread
 from shelly_plug import ShellyPlug
 from environment_schedule import EnvironmentSchedule
 from utils import between_two_times, get_timestamp
@@ -33,7 +32,6 @@ class HumidityController:
         self.number_of_periods = number_of_periods
         self.sunrise_offset_minutes = sunrise_offset_minutes
         self.sunset_offset_minutes = sunset_offset_minutes
-        self.only_during_daylight = only_during_daylight
         self.debug = debug
         self.cached_windows: list[tuple[datetime, datetime]] = []
         self.last_window_update_date: datetime | None = None
@@ -59,7 +57,7 @@ class HumidityController:
 
         # Total duration available for misting periods
         total_duration = eff_sunset - eff_sunrise
-        period_duration = total_duration / self.number_of_periods
+        period_duration = total_duration / (self.number_of_periods - 1)
         on_delta = timedelta(minutes=self.on_minutes)
 
         self.cached_windows = []
@@ -74,9 +72,8 @@ class HumidityController:
         """Check if we're currently in a misting window."""
         self._update_misting_windows_if_needed(now)
 
-        if self.only_during_daylight:
-            if not between_two_times(now, self.schedule.lights_on, self.schedule.lights_off):
-                return False
+        if not between_two_times(now, self.schedule.lights_on, self.schedule.lights_off):
+            return False
 
         for mist_start, mist_end in self.cached_windows:
             if mist_start <= now < mist_end:
@@ -93,16 +90,16 @@ class HumidityController:
             success = True
             for plug in self.plugs.values():
                 success &= plug.set_on(True)
-            thread.sleep(1.0)
+            time.sleep(1.0)
         elapsed_time = 0
         start_time = time.perf_counter()
         while elapsed_time < self.on_minutes * 60:
             dt = 0.5
-            thread.sleep(dt)
+            time.sleep(dt)
             elapsed_time = time.perf_counter() - start_time
         success = False
         while not success:
             success = True
             for plug in self.plugs.values():
                 success &= plug.set_on(False)
-            thread.sleep(1.0)
+            time.sleep(1.0)
