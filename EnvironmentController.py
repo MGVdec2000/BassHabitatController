@@ -38,15 +38,14 @@ def get_current_states(plugs: dict[str, ShellyPlug]) -> None:
     for plug in plugs.values():
         state = plug.check_state()
         if state is None:
-            print(f"{get_timestamp()}Plug {plug.name} is not responding")
             continue
         switch = "ON" if state else "OFF"
         print(f"{get_timestamp()}{plug.name} is {switch}")
 
 
 def main() -> None:
+    print(f"{get_timestamp()}Starting Tortoise Environment Controller...")
     if debug:
-        print(f"{get_timestamp()}Starting...")
         print(f"{get_timestamp()}Using config file: {CONFIG_PATH}")
 
     config = load_config()

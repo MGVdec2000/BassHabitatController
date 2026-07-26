@@ -92,13 +92,9 @@ class ShellyPlug:
     def set_on(self, cmd: bool) -> None:
         current_state = self.check_state()
         if current_state is None:
-            if debug:
-                print(f"{get_timestamp()}Failed to get current state for {self.name}")
             # could not get state, so don't change state'
             return
-        if self.check_state() == cmd:
-            if debug:
-                print(f"{get_timestamp()}Plug {self.name} is already in the desired state")
+        if current_state == cmd:
             # already in desired state
             return
 

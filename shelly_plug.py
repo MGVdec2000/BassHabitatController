@@ -38,8 +38,7 @@ class ShellyPlug:
                 print(f"{get_timestamp()}Failed to get current state for {self.name}")
             return
         if current_state == cmd:
-            if self.debug:
-                print(f"{get_timestamp()}Plug {self.name} is already in the desired state")
+            # Already in the desired state, no need to send a command
             return
 
         # noinspection HttpUrlsUsage
