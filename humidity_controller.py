@@ -37,6 +37,7 @@ class HumidityController:
         self.debug = debug
         self.cached_windows: list[tuple[datetime, datetime]] = []
         self.last_window_update_date: datetime | None = None
+        self.last_misting: bool | None = None
 
     def _update_misting_windows_if_needed(self, now: datetime) -> None:
         """Recalculate misting windows if the date has changed."""
@@ -86,5 +87,7 @@ class HumidityController:
 
     def update(self, now: datetime) -> None:
         misting = self._should_mist(now)
-        for plug in self.plugs.values():
-            plug.set_on(misting)
+        if misting != self.last_misting:
+            self.last_misting = misting
+            for plug in self.plugs.values():
+                plug.set_on(misting)
