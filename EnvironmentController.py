@@ -64,21 +64,22 @@ def main() -> None:
     sun_schedule = SunSchedule(latitude=target_lat, longitude=target_lon, timezone=tz)
     env_schedule = EnvironmentSchedule(minimum_hours=minimum_hours, sun_schedule=sun_schedule)
 
-    if bool(config["humidity"]["enable"]):
-        humidity_cfg = config.get("humidity", {})
-        humidity_plugs = {
-            name: ShellyPlug(name=name, ip=plug_cfg["ip"], shelly_id=plug_cfg["shelly_id"], debug=debug)
-            for name, plug_cfg in humidity_cfg.get("plugs", {}).items()
-        }
-        humidity = HumidityController(
-            plugs=humidity_plugs,
-            schedule=env_schedule,
-            on_minutes=float(humidity_cfg.get("on_minutes", 0.5)),
-            number_of_periods=int(humidity_cfg.get("number_of_periods", 4)),
-            sunrise_offset_minutes=float(humidity_cfg.get("sunrise_offset_minutes", 0.0)),
-            sunset_offset_minutes=float(humidity_cfg.get("sunset_offset_minutes", 0.0)),
-            debug=debug,
-        )
+
+    humidity_cfg = config.get("humidity", {})
+    humidity_plugs = {
+        name: ShellyPlug(name=name, ip=plug_cfg["ip"], shelly_id=plug_cfg["shelly_id"], debug=debug)
+        for name, plug_cfg in humidity_cfg.get("plugs", {}).items()
+    }
+    humidity = HumidityController(
+        plugs=humidity_plugs,
+        schedule=env_schedule,
+        on_minutes=float(humidity_cfg.get("on_minutes", 0.5)),
+        number_of_periods=int(humidity_cfg.get("number_of_periods", 4)),
+        sunrise_offset_minutes=float(humidity_cfg.get("sunrise_offset_minutes", 0.0)),
+        sunset_offset_minutes=float(humidity_cfg.get("sunset_offset_minutes", 0.0)),
+        enabled=bool(config["humidity"]["enable"]),
+        debug=debug,
+    )
 
     sunrise = sun_schedule.sunrise.astimezone(tz).strftime('%Y-%m-%d %H:%M:%S')
     sunset = sun_schedule.sunset.astimezone(tz).strftime('%H:%M:%S')
