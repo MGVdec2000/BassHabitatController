@@ -69,33 +69,35 @@ def main() -> None:
     lamp_plugs = {name: plug for name, plug in all_plugs.items() if "_lamp" in name}
     heater_plugs = {name: plug for name, plug in all_plugs.items() if "_heater" in name}
 
-    humidity_cfg = config.get("humidity", {})
-    humidity_plugs = {
-        name: ShellyPlug(name=name, ip=plug_cfg["ip"], shelly_id=plug_cfg["shelly_id"], debug=debug)
-        for name, plug_cfg in humidity_cfg.get("plugs", {}).items()
-    }
-
-    get_current_states({**all_plugs, **humidity_plugs})
-
     sun_schedule = SunSchedule(latitude=target_lat, longitude=target_lon, timezone=tz)
+    env_schedule = EnvironmentSchedule(minimum_hours=minimum_hours, sun_schedule=sun_schedule)
+
+    if bool(config["humidity"]["enable"]):
+        humidity_cfg = config.get("humidity", {})
+        humidity_plugs = {
+            name: ShellyPlug(name=name, ip=plug_cfg["ip"], shelly_id=plug_cfg["shelly_id"], debug=debug)
+            for name, plug_cfg in humidity_cfg.get("plugs", {}).items()
+        }
+        get_current_states(humidity_plugs)
+        humidity = HumidityController(
+            plugs=humidity_plugs,
+            schedule=env_schedule,
+            on_minutes=float(humidity_cfg.get("on_minutes", 0.5)),
+            number_of_periods=int(humidity_cfg.get("number_of_periods", 4)),
+            sunrise_offset_minutes=float(humidity_cfg.get("sunrise_offset_minutes", 0.0)),
+            sunset_offset_minutes=float(humidity_cfg.get("sunset_offset_minutes", 0.0)),
+            only_during_daylight=bool(humidity_cfg.get("only_during_daylight", True)),
+            debug=debug,
+        )
+
+    get_current_states(all_plugs)
+
     sunrise = sun_schedule.sunrise.astimezone(tz).strftime('%Y-%m-%d %H:%M:%S')
     sunset = sun_schedule.sunset.astimezone(tz).strftime('%H:%M:%S')
     print(f"{get_timestamp()}Sun schedule updated ({sunrise} / {sunset})")
 
-    env_schedule = EnvironmentSchedule(minimum_hours=minimum_hours, sun_schedule=sun_schedule)
-
     lighting = LightingController(plugs=lamp_plugs, schedule=env_schedule)
     heater = HeaterController(plugs=heater_plugs, schedule=env_schedule)
-    humidity = HumidityController(
-        plugs=humidity_plugs,
-        schedule=env_schedule,
-        on_minutes=float(humidity_cfg.get("on_minutes", 0.5)),
-        number_of_periods=int(humidity_cfg.get("number_of_periods", 4)),
-        sunrise_offset_minutes=float(humidity_cfg.get("sunrise_offset_minutes", 0.0)),
-        sunset_offset_minutes=float(humidity_cfg.get("sunset_offset_minutes", 0.0)),
-        only_during_daylight=bool(humidity_cfg.get("only_during_daylight", True)),
-        debug=debug,
-    )
 
     try:
         while running:
@@ -112,7 +114,9 @@ def main() -> None:
 
             lighting.update(now)
             heater.update(now)
-            humidity.update(now)
+
+            if bool(config["humidity"]["enable"]):
+                humidity.update(now)
 
             dt = 0.5
             sleep_time = 10

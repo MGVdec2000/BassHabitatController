@@ -1,4 +1,5 @@
 from datetime import datetime, time, timedelta
+import threading
 from shelly_plug import ShellyPlug
 from environment_schedule import EnvironmentSchedule
 from utils import between_two_times, get_timestamp
@@ -81,25 +82,45 @@ class HumidityController:
 
         return False
 
-    def update(self, now: datetime) -> None:
-        misting = self._should_mist(now)
-        if not misting:
-            return
+    def _turn_pump_on(self) -> None:
+        """Turn on the misting plugs."""
         success = False
         while not success:
+            print(f"{get_timestamp()}Attempting to turn on misting plugs")
             success = True
             for plug in self.plugs.values():
                 success &= plug.set_on(True)
-            time.sleep(1.0)
-        elapsed_time = 0
+            if success:
+                print(f"{get_timestamp()}Successfully turned on misting plugs")
+            else:
+                print(f"{get_timestamp()}Failed to turn on misting plugs, retrying...")
+                time.sleep(1.0)
+        
         start_time = time.perf_counter()
+        elapsed_time = 0
         while elapsed_time < self.on_minutes * 60:
             dt = 0.5
             time.sleep(dt)
             elapsed_time = time.perf_counter() - start_time
+            if self.debug:
+                print(f"{get_timestamp()}Elapsed misting time: {elapsed_time:.2f} seconds")
         success = False
         while not success:
+            print(f"{get_timestamp()}Attempting to turn off misting plugs")
             success = True
             for plug in self.plugs.values():
                 success &= plug.set_on(False)
-            time.sleep(1.0)
+                if success:
+                    print(f"{get_timestamp()}Successfully turned off misting plugs")
+                else:
+                    print(f"{get_timestamp()}Failed to turn off misting plugs, retrying...")
+                    time.sleep(1.0)
+        print(f"{get_timestamp()}Misting cycle complete")
+
+    def update(self, now: datetime) -> None:
+        misting = self._should_mist(now)
+        if not misting:
+            return
+        pump_thread = threading.Thread(target=self._turn_pump_on)
+        pump_thread.daemon = True
+        pump_thread.start()
