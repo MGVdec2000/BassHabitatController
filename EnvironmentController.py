@@ -5,6 +5,7 @@ import sys
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from LightControlAutomation import get_current_states
 from sun_schedule import SunSchedule
 from environment_schedule import EnvironmentSchedule
 from shelly_plug import ShellyPlug
@@ -32,15 +33,6 @@ signal.signal(signal.SIGTERM, request_shutdown)
 def load_config() -> dict:
     with open(CONFIG_PATH, "r", encoding="utf-8") as file:
         return yaml.safe_load(file)
-
-
-def get_current_states(plugs: dict[str, ShellyPlug]) -> None:
-    for plug in plugs.values():
-        state = plug.check_state()
-        if state is None:
-            continue
-        switch = "ON" if state else "OFF"
-        print(f"{get_timestamp()}{plug.name} is {switch}")
 
 
 def main() -> None:
@@ -78,7 +70,6 @@ def main() -> None:
             name: ShellyPlug(name=name, ip=plug_cfg["ip"], shelly_id=plug_cfg["shelly_id"], debug=debug)
             for name, plug_cfg in humidity_cfg.get("plugs", {}).items()
         }
-        get_current_states(humidity_plugs)
         humidity = HumidityController(
             plugs=humidity_plugs,
             schedule=env_schedule,
@@ -89,8 +80,6 @@ def main() -> None:
             only_during_daylight=bool(humidity_cfg.get("only_during_daylight", True)),
             debug=debug,
         )
-
-    get_current_states(all_plugs)
 
     sunrise = sun_schedule.sunrise.astimezone(tz).strftime('%Y-%m-%d %H:%M:%S')
     sunset = sun_schedule.sunset.astimezone(tz).strftime('%H:%M:%S')

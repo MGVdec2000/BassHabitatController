@@ -36,6 +36,18 @@ class HumidityController:
         self.debug = debug
         self.cached_windows: list[tuple[datetime, datetime]] = []
         self.last_window_update_date: datetime | None = None
+        self.get_current_states()
+
+    def get_current_states(self) -> None:
+        if not self.enabled:
+            print(f"{get_timestamp()}Humidity controller is disabled, skipping state check")
+            return
+        for plug in self.plugs.values():
+            state = plug.check_state()
+            if state is None:
+                continue
+            switch = "ON" if state else "OFF"
+            print(f"{get_timestamp()}{plug.name} is {switch}")
 
     def _update_misting_windows_if_needed(self, now: datetime) -> None:
         """Recalculate misting windows if the date has changed."""
