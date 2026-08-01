@@ -1,8 +1,15 @@
 from datetime import datetime, time, timedelta
 import threading
+from enum import Enum
 from shelly_plug import ShellyPlug
 from environment_schedule import EnvironmentSchedule
 from utils import between_two_times, get_timestamp
+
+
+class PumpState(Enum):
+    ON = "ON"
+    OFF = "OFF"
+    ERROR = "Error"
 
 
 class HumidityController:
@@ -18,7 +25,7 @@ class HumidityController:
 
     def __init__(
         self,
-        plugs: dict[str, ShellyPlug],
+        plug: ShellyPlug,
         schedule: EnvironmentSchedule,
         on_minutes: float = 0.5,
         number_of_periods: int = 4,
@@ -27,7 +34,7 @@ class HumidityController:
         enabled: bool = True,
         debug: bool = False,
     ):
-        self.plugs = plugs
+        self.plug = plug
         self.schedule = schedule
         self.on_minutes = on_minutes
         self.number_of_periods = number_of_periods
@@ -35,9 +42,10 @@ class HumidityController:
         self.sunset_offset_minutes = sunset_offset_minutes
         self.enabled = enabled
         self.debug = debug
+        self.current_state = PumpState.ERROR
         self.cached_windows: list[tuple[datetime, datetime]] = []
         self.last_window_update_date: datetime | None = None
-        self.get_current_states()
+        self.get_current_state()
 
     def manual_override(self, signum, _frame):
         print(f"Manual override requested by signal {signum}")
@@ -45,16 +53,16 @@ class HumidityController:
         pump_thread.daemon = True
         pump_thread.start()
 
-    def get_current_states(self) -> None:
+    def get_current_state(self) -> None:
         if not self.enabled:
             print(f"{get_timestamp()}Humidity controller is disabled, skipping state check")
             return
-        for plug in self.plugs.values():
-            state = plug.check_state()
-            if state is None:
-                continue
-            switch = "ON" if state else "OFF"
-            print(f"{get_timestamp()}{plug.name} is {switch}")
+        state = self.plug.check_state()
+        if state is None:
+            self.current_state = PumpState.ERROR
+            return
+        self.current_state = PumpState.ON if state else PumpState.OFF
+        print(f"{get_timestamp()}{self.plug.name} is {self.current_state.value}")
 
     def _update_misting_windows_if_needed(self, now: datetime) -> None:
         if not self.enabled:
@@ -107,17 +115,15 @@ class HumidityController:
         return False
 
     def _turn_pump_on(self) -> None:
-        """Turn on the misting plugs."""
-        success = False
-        while not success:
-            print(f"{get_timestamp()}Attempting to turn on misting plugs")
-            success = True
-            for plug in self.plugs.values():
-                success &= plug.set_on(True)
-            if success:
-                print(f"{get_timestamp()}Successfully turned on misting plugs")
+        """Turn on the misting plug."""
+        while self.current_state is not PumpState.ON:
+            print(f"{get_timestamp()}Attempting to turn on misting plug")
+            success = self.plug.set_on(True)
+            if success is True:
+                self.current_state = PumpState.ON
+                print(f"{get_timestamp()}Successfully turned on misting plug")
             else:
-                print(f"{get_timestamp()}Failed to turn on misting plugs, retrying...")
+                print(f"{get_timestamp()}Failed to turn on misting plug, retrying...")
                 time.sleep(1.0)
         
         start_time = time.perf_counter()
@@ -130,15 +136,14 @@ class HumidityController:
                 print(f"{get_timestamp()}Elapsed misting time: {elapsed_time:.2f} seconds")
         success = False
         while not success:
-            print(f"{get_timestamp()}Attempting to turn off misting plugs")
-            success = True
-            for plug in self.plugs.values():
-                success &= plug.set_on(False)
-                if success:
-                    print(f"{get_timestamp()}Successfully turned off misting plugs")
-                else:
-                    print(f"{get_timestamp()}Failed to turn off misting plugs, retrying...")
-                    time.sleep(1.0)
+            print(f"{get_timestamp()}Attempting to turn off misting plug")
+            success = self.plug.set_on(False)
+            if success is True:
+                self.current_state = PumpState.OFF
+                print(f"{get_timestamp()}Successfully turned off misting plug")
+            else:
+                print(f"{get_timestamp()}Failed to turn off misting plug, retrying...")
+                time.sleep(1.0)
         print(f"{get_timestamp()}Misting cycle complete")
 
     def update(self, now: datetime) -> None:

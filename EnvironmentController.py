@@ -70,8 +70,11 @@ def main() -> None:
         name: ShellyPlug(name=name, ip=plug_cfg["ip"], shelly_id=plug_cfg["shelly_id"], debug=debug)
         for name, plug_cfg in humidity_cfg.get("plugs", {}).items()
     }
+    if len(humidity_plugs) != 1:
+        raise ValueError(f"Expected exactly one humidity plug, got {len(humidity_plugs)}")
+    humidity_plug = next(iter(humidity_plugs.values()))
     humidity = HumidityController(
-        plugs=humidity_plugs,
+        plug=humidity_plug,
         schedule=env_schedule,
         on_minutes=float(humidity_cfg.get("on_minutes", 0.5)),
         number_of_periods=int(humidity_cfg.get("number_of_periods", 4)),
