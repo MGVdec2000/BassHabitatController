@@ -36,7 +36,7 @@ def load_config() -> dict:
 
 
 def main() -> None:
-    thread.sleep(3)  # Give some time for system to stabilize before starting
+    thread.sleep(4)  # Give some time for system to stabilize before starting
     print(f"{get_timestamp()}Starting Tortoise Environment Controller, v3.0")
     if debug:
         print(f"{get_timestamp()}Using config file: {CONFIG_PATH}")
@@ -81,7 +81,7 @@ def main() -> None:
         debug=debug,
     )
 
-    signal.signal(signal.SIGUSR1, humidity._turn_pump_on)
+    signal.signal(signal.SIGUSR1, humidity.manual_override)
 
     sunrise = sun_schedule.sunrise.astimezone(tz).strftime('%Y-%m-%d %H:%M:%S')
     sunset = sun_schedule.sunset.astimezone(tz).strftime('%H:%M:%S')
