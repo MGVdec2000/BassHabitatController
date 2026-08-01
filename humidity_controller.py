@@ -1,5 +1,6 @@
 from datetime import datetime, time, timedelta
 import threading
+import time as thread
 from enum import Enum
 from shelly_plug import ShellyPlug
 from environment_schedule import EnvironmentSchedule
@@ -124,13 +125,13 @@ class HumidityController:
                 print(f"{get_timestamp()}Successfully turned on misting plug")
             else:
                 print(f"{get_timestamp()}Failed to turn on misting plug, retrying...")
-                time.sleep(1.0)
+                thread.sleep(1.0)
         
         start_time = time.perf_counter()
         elapsed_time = 0
         while elapsed_time < self.on_minutes * 60:
             dt = 0.5
-            time.sleep(dt)
+            thread.sleep(dt)
             elapsed_time = time.perf_counter() - start_time
             if self.debug:
                 print(f"{get_timestamp()}Elapsed misting time: {elapsed_time:.2f} seconds")
@@ -143,7 +144,7 @@ class HumidityController:
                 print(f"{get_timestamp()}Successfully turned off misting plug")
             else:
                 print(f"{get_timestamp()}Failed to turn off misting plug, retrying...")
-                time.sleep(1.0)
+                thread.sleep(1.0)
         print(f"{get_timestamp()}Misting cycle complete")
 
     def update(self, now: datetime) -> None:
