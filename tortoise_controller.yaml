@@ -21,9 +21,9 @@ plugs:
 humidity:
   enable: true
   on_minutes: 0.75
-  number_of_periods: 4
+  number_of_periods: 3
   sunrise_offset_minutes: 30
-  sunset_offset_minutes: -30
+  sunset_offset_minutes: -60
   plugs:
     mister:
       ip: "192.168.1.183"
