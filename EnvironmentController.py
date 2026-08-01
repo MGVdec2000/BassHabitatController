@@ -77,7 +77,6 @@ def main() -> None:
             number_of_periods=int(humidity_cfg.get("number_of_periods", 4)),
             sunrise_offset_minutes=float(humidity_cfg.get("sunrise_offset_minutes", 0.0)),
             sunset_offset_minutes=float(humidity_cfg.get("sunset_offset_minutes", 0.0)),
-            only_during_daylight=bool(humidity_cfg.get("only_during_daylight", True)),
             debug=debug,
         )
 

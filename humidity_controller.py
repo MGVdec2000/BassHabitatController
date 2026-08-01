@@ -24,7 +24,6 @@ class HumidityController:
         number_of_periods: int = 4,
         sunrise_offset_minutes: float = 0.0,
         sunset_offset_minutes: float = 0.0,
-        only_during_daylight: bool = True,
         enabled: bool = True,
         debug: bool = False,
     ):
