@@ -8,10 +8,15 @@ from utils import between_two_times, get_timestamp
 class LightingController:
     """Controls lamp plugs based on the environment schedule."""
 
-    def __init__(self, plugs: dict[str, ShellyPlug], schedule: EnvironmentSchedule):
+    def __init__(
+            self,
+            plugs: dict[str, ShellyPlug],
+            schedule: EnvironmentSchedule,
+            debug: bool = False
+        ):
         self.plugs = plugs
         self.schedule = schedule
-        self.debug = schedule.debug
+        self.debug = debug
         self.get_current_states()
 
     def get_current_states(self) -> None:

@@ -81,12 +81,14 @@ def main() -> None:
         debug=debug,
     )
 
+    signal.signal(signal.SIGUSR1, humidity._turn_pump_on)
+
     sunrise = sun_schedule.sunrise.astimezone(tz).strftime('%Y-%m-%d %H:%M:%S')
     sunset = sun_schedule.sunset.astimezone(tz).strftime('%H:%M:%S')
     print(f"{get_timestamp()}Sun schedule updated ({sunrise} / {sunset})")
 
-    lighting = LightingController(plugs=lamp_plugs, schedule=env_schedule)
-    heater = HeaterController(plugs=heater_plugs, schedule=env_schedule)
+    lighting = LightingController(plugs=lamp_plugs, schedule=env_schedule, debug=debug)
+    heater = HeaterController(plugs=heater_plugs, schedule=env_schedule, debug=debug)
 
     try:
         while running:

@@ -39,6 +39,12 @@ class HumidityController:
         self.last_window_update_date: datetime | None = None
         self.get_current_states()
 
+    def manual_override(self, signum, _frame):
+        print(f"Manual override requested by signal {signum}")
+        pump_thread = threading.Thread(target=self._turn_pump_on)
+        pump_thread.daemon = True
+        pump_thread.start()
+
     def get_current_states(self) -> None:
         if not self.enabled:
             print(f"{get_timestamp()}Humidity controller is disabled, skipping state check")

@@ -12,9 +12,10 @@ class HeaterController:
     when the lights are off.
     """
 
-    def __init__(self, plugs: dict[str, ShellyPlug], schedule: EnvironmentSchedule):
+    def __init__(self, plugs: dict[str, ShellyPlug], schedule: EnvironmentSchedule, debug: bool = False):
         self.plugs = plugs
         self.schedule = schedule
+        self.debug = debug
 
     def update(self, now: datetime) -> None:
         heaters_on = before_or_after(now, self.schedule.heaters_off, self.schedule.heaters_on)
