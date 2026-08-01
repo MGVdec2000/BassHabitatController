@@ -25,6 +25,7 @@ class HumidityController:
         sunrise_offset_minutes: float = 0.0,
         sunset_offset_minutes: float = 0.0,
         only_during_daylight: bool = True,
+        enabled: bool = True,
         debug: bool = False,
     ):
         self.plugs = plugs
@@ -33,6 +34,7 @@ class HumidityController:
         self.number_of_periods = number_of_periods
         self.sunrise_offset_minutes = sunrise_offset_minutes
         self.sunset_offset_minutes = sunset_offset_minutes
+        self.enabled = enabled
         self.debug = debug
         self.cached_windows: list[tuple[datetime, datetime]] = []
         self.last_window_update_date: datetime | None = None
@@ -50,6 +52,8 @@ class HumidityController:
             print(f"{get_timestamp()}{plug.name} is {switch}")
 
     def _update_misting_windows_if_needed(self, now: datetime) -> None:
+        if not self.enabled:
+            return
         """Recalculate misting windows if the date has changed."""
         current_date = now.date()
         last_update_date = self.last_window_update_date.date() if self.last_window_update_date else None
@@ -59,8 +63,9 @@ class HumidityController:
             self.last_window_update_date = now
 
     def _calculate_misting_windows(self) -> None:
+        if not self.enabled:
+            return
         """Calculate and cache misting windows for today."""
-        # Calculate effective day window with offsets
         eff_sunrise = self.schedule.lights_on + timedelta(minutes=self.sunrise_offset_minutes)
         eff_sunset = self.schedule.lights_off + timedelta(minutes=self.sunset_offset_minutes)
 
@@ -68,7 +73,7 @@ class HumidityController:
             self.cached_windows = []
             return
 
-        # Total duration available for misting periods
+        """Total duration available for misting periods"""
         total_duration = eff_sunset - eff_sunrise
         period_duration = total_duration / (self.number_of_periods - 1)
         on_delta = timedelta(minutes=self.on_minutes)
@@ -82,6 +87,8 @@ class HumidityController:
             print(f"{get_timestamp()}Misting window {i+1}: {start_s}")
 
     def _should_mist(self, now: datetime) -> bool:
+        if not self.enabled:
+            return False
         """Check if we're currently in a misting window."""
         self._update_misting_windows_if_needed(now)
 
@@ -130,6 +137,8 @@ class HumidityController:
         print(f"{get_timestamp()}Misting cycle complete")
 
     def update(self, now: datetime) -> None:
+        if not self.enabled:
+            return
         misting = self._should_mist(now)
         if not misting:
             return

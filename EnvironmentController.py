@@ -103,9 +103,7 @@ def main() -> None:
 
             lighting.update(now)
             heater.update(now)
-
-            if bool(config["humidity"]["enable"]):
-                humidity.update(now)
+            humidity.update(now)
 
             dt = 0.5
             sleep_time = 10
