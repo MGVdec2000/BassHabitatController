@@ -48,7 +48,6 @@ class HumidityController:
         self.last_window_update_date: datetime | None = None
         self._pump_cycle_active = False
         self._pump_cycle_lock = threading.Lock()
-        self.get_current_state()
 
     def manual_override(self, signum, _frame):
         print(f"Manual override requested by signal {signum}")
@@ -66,21 +65,10 @@ class HumidityController:
         pump_thread.start()
         return True
 
-    def get_current_state(self) -> None:
-        if not self.enabled:
-            print(f"{get_timestamp()}Humidity controller is disabled, skipping state check")
-            return
-        state = self.plug.check_state()
-        if state is None:
-            self.current_state = PumpState.ERROR
-            return
-        self.current_state = PumpState.ON if state else PumpState.OFF
-        print(f"{get_timestamp()}{self.plug.name} is {self.current_state.value}")
-
     def _update_misting_windows_if_needed(self, now: datetime) -> None:
+        """Recalculate misting windows if the date has changed."""
         if not self.enabled:
             return
-        # Recalculate misting windows if the date has changed
         current_date = now.date()
         last_update_date = self.last_window_update_date.date() if self.last_window_update_date else None
 
@@ -89,9 +77,9 @@ class HumidityController:
             self.last_window_update_date = now
 
     def _calculate_misting_windows(self) -> None:
+        """Calculate and cache misting windows for today."""
         if not self.enabled:
             return
-        # Calculate and cache misting windows for today.
         eff_sunrise = self.schedule.lights_on + timedelta(minutes=self.sunrise_offset_minutes)
         eff_sunset = self.schedule.lights_off + timedelta(minutes=self.sunset_offset_minutes)
 
@@ -99,7 +87,6 @@ class HumidityController:
             self.cached_windows = []
             return
 
-        # Total duration available for misting periods
         total_duration = eff_sunset - eff_sunrise
         period_duration = total_duration / (self.number_of_periods - 1)
         on_delta = timedelta(minutes=self.on_minutes)
@@ -113,9 +100,9 @@ class HumidityController:
             print(f"{get_timestamp()}Misting window {i+1}: {start_s}")
 
     def _should_mist(self, now: datetime) -> bool:
+        """Check if we're currently in a misting window."""
         if not self.enabled:
             return False
-        # Check if we're currently in a misting window.
         self._update_misting_windows_if_needed(now)
 
         if not between_two_times(now, self.schedule.lights_on, self.schedule.lights_off):
@@ -128,6 +115,7 @@ class HumidityController:
         return False
 
     def _turn_pump_on(self) -> None:
+        """Turn the pump on for the configured duration, then turn it off."""
         print(f"{get_timestamp()}Start misting cycle for {self.on_minutes} minutes")
         try:
             self.plug.set_on(True)
