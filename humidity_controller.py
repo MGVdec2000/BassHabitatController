@@ -46,13 +46,25 @@ class HumidityController:
         self.current_state = PumpState.ERROR
         self.cached_windows: list[tuple[datetime, datetime]] = []
         self.last_window_update_date: datetime | None = None
+        self._pump_cycle_active = False
+        self._pump_cycle_lock = threading.Lock()
         self.get_current_state()
 
     def manual_override(self, signum, _frame):
         print(f"Manual override requested by signal {signum}")
+        self._start_misting_cycle()
+
+    def _start_misting_cycle(self) -> bool:
+        with self._pump_cycle_lock:
+            if self._pump_cycle_active:
+                print(f"{get_timestamp()}Misting cycle already running, skipping")
+                return False
+            self._pump_cycle_active = True
+
         pump_thread = threading.Thread(target=self._turn_pump_on)
         pump_thread.daemon = True
         pump_thread.start()
+        return True
 
     def get_current_state(self) -> None:
         if not self.enabled:
@@ -116,36 +128,15 @@ class HumidityController:
         return False
 
     def _turn_pump_on(self) -> None:
-        """Turn on the misting plug."""
-        while self.current_state is not PumpState.ON:
-            print(f"{get_timestamp()}Attempting to turn on misting plug")
-            success = self.plug.set_on(True)
-            if success is True:
-                self.current_state = PumpState.ON
-                print(f"{get_timestamp()}Successfully turned on misting plug")
-            else:
-                print(f"{get_timestamp()}Failed to turn on misting plug, retrying...")
-                thread.sleep(1.0)
-        
-        start_time = time.perf_counter()
-        elapsed_time = 0
-        while elapsed_time < self.on_minutes * 60:
-            dt = 0.5
-            thread.sleep(dt)
-            elapsed_time = time.perf_counter() - start_time
-            if self.debug:
-                print(f"{get_timestamp()}Elapsed misting time: {elapsed_time:.2f} seconds")
-        success = False
-        while not success:
-            print(f"{get_timestamp()}Attempting to turn off misting plug")
-            success = self.plug.set_on(False)
-            if success is True:
-                self.current_state = PumpState.OFF
-                print(f"{get_timestamp()}Successfully turned off misting plug")
-            else:
-                print(f"{get_timestamp()}Failed to turn off misting plug, retrying...")
-                thread.sleep(1.0)
-        print(f"{get_timestamp()}Misting cycle complete")
+        print(f"{get_timestamp()}Start misting cycle for {self.on_minutes} minutes")
+        try:
+            self.plug.set_on(True)
+            thread.sleep(self.on_minutes * 60)
+        finally:
+            self.plug.set_on(False)
+            with self._pump_cycle_lock:
+                self._pump_cycle_active = False
+            print(f"{get_timestamp()}Misting cycle complete")
 
     def update(self, now: datetime) -> None:
         if not self.enabled:
@@ -153,6 +144,4 @@ class HumidityController:
         misting = self._should_mist(now)
         if not misting:
             return
-        pump_thread = threading.Thread(target=self._turn_pump_on)
-        pump_thread.daemon = True
-        pump_thread.start()
+        self._start_misting_cycle()
