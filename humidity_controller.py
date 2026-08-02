@@ -1,4 +1,5 @@
 from datetime import datetime, time, timedelta
+from multiprocessing.util import debug
 import threading
 import time as thread
 from enum import Enum
@@ -53,17 +54,17 @@ class HumidityController:
         print(f"Manual override requested by signal {signum}")
         self._start_misting_cycle()
 
-    def _start_misting_cycle(self) -> bool:
+    def _start_misting_cycle(self) -> None:
         with self._pump_cycle_lock:
             if self._pump_cycle_active:
-                # print(f"{get_timestamp()}Misting cycle already running, skipping")
-                return False
-            self._pump_cycle_active = True
+                if self.debug:
+                    print(f"{get_timestamp()}Misting cycle already running, skipping")
+                return
 
         pump_thread = threading.Thread(target=self._turn_pump_on)
         pump_thread.daemon = True
         pump_thread.start()
-        return True
+        self._pump_cycle_active = True
 
     def _update_misting_windows_if_needed(self, now: datetime) -> None:
         """Recalculate misting windows if the date has changed."""
