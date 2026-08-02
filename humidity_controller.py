@@ -57,7 +57,7 @@ class HumidityController:
     def _start_misting_cycle(self) -> bool:
         with self._pump_cycle_lock:
             if self._pump_cycle_active:
-                print(f"{get_timestamp()}Misting cycle already running, skipping")
+                # print(f"{get_timestamp()}Misting cycle already running, skipping")
                 return False
             self._pump_cycle_active = True
 
@@ -80,7 +80,7 @@ class HumidityController:
     def _update_misting_windows_if_needed(self, now: datetime) -> None:
         if not self.enabled:
             return
-        """Recalculate misting windows if the date has changed."""
+        # Recalculate misting windows if the date has changed
         current_date = now.date()
         last_update_date = self.last_window_update_date.date() if self.last_window_update_date else None
 
@@ -91,7 +91,7 @@ class HumidityController:
     def _calculate_misting_windows(self) -> None:
         if not self.enabled:
             return
-        """Calculate and cache misting windows for today."""
+        # Calculate and cache misting windows for today.
         eff_sunrise = self.schedule.lights_on + timedelta(minutes=self.sunrise_offset_minutes)
         eff_sunset = self.schedule.lights_off + timedelta(minutes=self.sunset_offset_minutes)
 
@@ -99,7 +99,7 @@ class HumidityController:
             self.cached_windows = []
             return
 
-        """Total duration available for misting periods"""
+        # Total duration available for misting periods
         total_duration = eff_sunset - eff_sunrise
         period_duration = total_duration / (self.number_of_periods - 1)
         on_delta = timedelta(minutes=self.on_minutes)
@@ -115,7 +115,7 @@ class HumidityController:
     def _should_mist(self, now: datetime) -> bool:
         if not self.enabled:
             return False
-        """Check if we're currently in a misting window."""
+        # Check if we're currently in a misting window.
         self._update_misting_windows_if_needed(now)
 
         if not between_two_times(now, self.schedule.lights_on, self.schedule.lights_off):
